@@ -56,6 +56,9 @@
 #include "statsCnt.h"
 #include "static_mem.h"
 #include "rateSupervisor.h"
+#include "su_wrench_observer.h" // SEUK
+
+
 
 static bool isInit;
 
@@ -188,6 +191,8 @@ void stabilizerInit(StateEstimatorType estimator)
 
   STATIC_MEM_TASK_CREATE(stabilizerTask, stabilizerTask, STABILIZER_TASK_NAME, NULL, STABILIZER_TASK_PRI);
 
+
+  suWrenchObserverInit(); // SEUK
   isInit = true;
 }
 
@@ -325,6 +330,8 @@ static void stabilizerTask(void* param)
 
       stateEstimator(&state, stabilizerStep);
 
+
+      
       const bool areMotorsAllowedToRun = supervisorAreMotorsAllowedToRun();
 
       // Critical for safety, be careful if you modify this code!
@@ -354,8 +361,12 @@ static void stabilizerTask(void* param)
         controlMotors(&control);
       } else {
         motorsStop();
-      }
 
+        motorPwm.motors.m1 = motorPwm.motors.m2 = 0; // SEUK 모터 멈췄을때 로그에서도 0 뜨게 하기 위함임
+        motorPwm.motors.m3 = motorPwm.motors.m4 = 0; // SEUK
+      }
+      suWrenchObserverUpdate(&state, &motorPwm); // SEUK 
+      
       // Compute compressed log formats
       compressState();
       compressSetpoint();

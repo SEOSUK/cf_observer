@@ -46,7 +46,7 @@
 #define ARM_LENGTH 0.050f  // m
 // Default: Crazyflie 2.1 Brushless with propeller guards, 350mAh battery, and Lighthouse deck.
 // Update this value with the mass of your specific setup if different.
-#define CF_MASS 0.0393f  // kg
+#define CF_MASS 0.0393f  // kg  // MJSEUK // TODO: 이거 무게 바꾸면 모델기반 컨트롤러나 추정기에서 싹다 이 무게 기반으로 계산함.
 // Thrust coefficients
 #define THRUST_MIN      0.02f // TODO, value is for the legacy propellers
 #define THRUST_MAX      0.1125f // TODO, value is for the legacy propellers
