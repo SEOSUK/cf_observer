@@ -1,10 +1,10 @@
 # from SU
 ## 본인 레포로 받아오려면
-'''git clone https://github.com/SEOSUK/cf_observer --recursive'''
+```git clone https://github.com/SEOSUK/cf_observer --recursive```
 ## 빌드하려면
-'''cd cf_observer'''
-'''make cf21bl_defconfig'''
-'''make -j$(nproc) ''' 
+```cd cf_observer```
+```make cf21bl_defconfig ```
+```make -j$(nproc) ```
 
 # Crazyflie Firmware  [![CI](https://github.com/bitcraze/crazyflie-firmware/workflows/CI/badge.svg)](https://github.com/bitcraze/crazyflie-firmware/actions?query=workflow%3ACI)
 
