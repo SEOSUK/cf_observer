@@ -4,6 +4,7 @@
 #include "debug.h"
 #include "config.h"
 #include "platform_defaults.h"   // ★ THRUST_MAX, THRUST2TORQUE, ARM_LENGTH
+#include "pm.h"                  // ★ 배터리 전압 읽기
 #include <math.h>
 
 // ==============================
@@ -14,24 +15,55 @@ static float su_world_input_Force[3];   // [Fx, Fy, Fz] (World)
 static float su_body_input_Torque[3];   // [Tx, Ty, Tz] (Body)
 
 // 옵셔널 미세보정 (기본 1.0)
-static float su_k_force_scale = 1.0f;   // MJSEUK TODO. 이거 바꿔야할수도있음.
+static float su_voltage_model_a = 0.320569f;   // MJSEUK TODO. 이거 바꿔야할수도있음.
+static float su_voltage_model_b = 0.150439f;   // MJSEUK TODO. 이거 바꿔야할수도있음.
+
+// === 실제 전압 / LPF 상태 ===
+static float su_vbat_filt = 4.0f;       // 초기값: 적당한 시작 전압
+static float su_vbat_alpha = 0.05f;     // LPF 알파 (0~1, 클수록 빠르게 추종)
+
+// 로깅: 필터된 전압
+static float su_vbat_log = 0.0f;
+
 
 void suWrenchObserverInit(void) {
     su_body_input_Force[0] = su_body_input_Force[1] = su_body_input_Force[2] = 0.0f;
     su_world_input_Force[0] = su_world_input_Force[1] = su_world_input_Force[2] = 0.0f;
     su_body_input_Torque[0] = su_body_input_Torque[1] = su_body_input_Torque[2] = 0.0f;
+
+    // 초기 전압 샘플로 LPF 초기화
+    float v0 = pmGetBatteryVoltage();           // [V]
+    // 만약 pmGetBatteryVoltageMV()만 있다면: v0 = pmGetBatteryVoltageMV() * 0.001f;
+    if (isfinite(v0) && v0 > 0.5f) {
+        su_vbat_filt = v0;
+    }
+    su_vbat_log = su_vbat_filt;
+
     DEBUG_PRINT("SU Wrench observer initialized\n");
 }
 
+
 void suWrenchObserverUpdate(const state_t *state,
                             const motors_thrust_pwm_t *motorPwm) {
-    // ---- 1) PWM → Force[N]  (power_distribution와 동일 스케일)
-    const float pwm2N = (THRUST_MAX / (float)UINT16_MAX) * su_k_force_scale;
 
-    const float f1 = pwm2N * (float)motorPwm->motors.m1;
-    const float f2 = pwm2N * (float)motorPwm->motors.m2;
-    const float f3 = pwm2N * (float)motorPwm->motors.m3;
-    const float f4 = pwm2N * (float)motorPwm->motors.m4;
+    // ---- 0) 실제 전압 읽기 + LPF
+    float v_meas = pmGetBatteryVoltage();       // [V]
+    // 만약 pmGetBatteryVoltageMV()만 있다면: v_meas = pmGetBatteryVoltageMV() * 0.001f;
+
+    // 1차 IIR LPF
+    su_vbat_filt += su_vbat_alpha * (v_meas - su_vbat_filt);
+    su_vbat_log = su_vbat_filt;
+
+    // ---- 1) PWM → Force[N]  (power_distribution와 동일 스케일)
+    const float pwm2N = (THRUST_MAX / (float)UINT16_MAX);
+
+    // ★ 실제 전압을 반영한 모델
+    const float voltage_model = su_voltage_model_a * su_vbat_filt - su_voltage_model_b;
+
+    const float f1 = voltage_model * pwm2N * (float)motorPwm->motors.m1;
+    const float f2 = voltage_model * pwm2N * (float)motorPwm->motors.m2;
+    const float f3 = voltage_model * pwm2N * (float)motorPwm->motors.m3;
+    const float f4 = voltage_model * pwm2N * (float)motorPwm->motors.m4;
 
     // ---- 2) Body-frame Force
     const float Fz = f1 + f2 + f3 + f4;
@@ -80,7 +112,9 @@ void suWrenchObserverUpdate(const state_t *state,
 
 // 파라미터 (필요시 튜닝)
 PARAM_GROUP_START(su_wrench)
-PARAM_ADD(PARAM_FLOAT, k_force_scale, &su_k_force_scale)
+PARAM_ADD(PARAM_FLOAT, voltage_model_a, &su_voltage_model_a)    // 늘상 피팅하던 a
+PARAM_ADD(PARAM_FLOAT, voltage_model_b, &su_voltage_model_b)    // 늘상 피팅하던 b
+PARAM_ADD(PARAM_FLOAT, vbat_alpha,      &su_vbat_alpha)      // 배터리 전압 low pass filter gain (작을수록 delay 및 필터링 커짐) 전압 값 너무 흔들리면 내리고, 성능 올리고싶으면 올리면 됨.
 PARAM_GROUP_STOP(su_wrench)
 
 // 로그 그룹
@@ -94,4 +128,5 @@ LOG_ADD(LOG_FLOAT, suTz,  &su_body_input_Torque[2])
 LOG_ADD(LOG_FLOAT, suWFx, &su_world_input_Force[0])
 LOG_ADD(LOG_FLOAT, suWFy, &su_world_input_Force[1])
 LOG_ADD(LOG_FLOAT, suWFz, &su_world_input_Force[2])
+LOG_ADD(LOG_FLOAT, suV,   &su_vbat_log)                  // 필터링 된 전압 로깅 (로패필 거침)
 LOG_GROUP_STOP(suWrenchObs)
