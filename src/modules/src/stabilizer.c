@@ -57,8 +57,10 @@
 #include "static_mem.h"
 #include "rateSupervisor.h"
 #include "su_wrench_observer.h" // SEUK
-
-
+// wrench observer 속도
+#ifndef SU_WRENCH_RATE_HZ
+#define SU_WRENCH_RATE_HZ 250 
+#endif
 
 static bool isInit;
 
@@ -365,8 +367,10 @@ static void stabilizerTask(void* param)
         motorPwm.motors.m1 = motorPwm.motors.m2 = 0; // SEUK 모터 멈췄을때 로그에서도 0 뜨게 하기 위함임
         motorPwm.motors.m3 = motorPwm.motors.m4 = 0; // SEUK
       }
-    suWrenchObserverUpdate(&state, &motorPwm, &sensorData.gyro);      
-      // Compute compressed log formats
+      // Run the wrench observer at ~300 Hz (decimated from 1 kHz loop)
+      if (RATE_DO_EXECUTE(SU_WRENCH_RATE_HZ, stabilizerStep)) {
+        suWrenchObserverUpdate(&state, &motorPwm, &sensorData.gyro);
+      }      // Compute compressed log formats
       compressState();
       compressSetpoint();
 

@@ -40,6 +40,7 @@ obj-y += serial_4way.o
 obj-y += sound_cf2.o
 obj-y += stabilizer.o
 obj-y += su_wrench_observer.o   # SEUK
+obj-y += su_params.o
 obj-y += static_mem.o
 obj-y += supervisor.o
 obj-y += supervisor_state_machine.o
