@@ -1,6 +1,10 @@
 # from SU
 ## 본인 레포로 받아오려면
 ```git clone https://github.com/SEOSUK/cf_observer --recursive```
+
+## Release
+- 전압강하 모델: ```git checkout f596c3211e29e298db6305a2b7bb697a7fa88719```
+- momentum Observer: ```git checkout67b71e6ac82a5792508ef40a12b18b77954a46ca```
 ## 빌드하려면
 ```cd cf_observer```
 ```make cf21bl_defconfig ```
