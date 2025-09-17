@@ -27,6 +27,10 @@ extern float Jxx;                 // [kg·m^2]
 extern float Jyy;                 // [kg·m^2]
 extern float Jzz;                 // [kg·m^2]
 
+extern float Offset_x;            // [m]
+extern float Offset_y;            // [m]
+extern float Offset_z;            // [m]
+
 // -------- Wrench observer / MOB --------
 extern float su_Kf;               // [1/s] linear momentum observer gain
 extern float su_Ktau;             // [1/s] angular momentum observer gain

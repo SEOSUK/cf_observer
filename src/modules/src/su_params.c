@@ -8,6 +8,9 @@ float su_mass            = CF_MASS;      // [kg] 원래는 0.393
 float Jxx                = 1.9e-5f;      // [kg·m^2]
 float Jyy                = 1.9e-5f;      // [kg·m^2]
 float Jzz                = 3.0e-5f;      // [kg·m^2]
+float Offset_x           = 0.0f;      // [m]
+float Offset_y           = 0.0f;      // [m]
+float Offset_z           = 0.0f;      // [m]
 
 
 // Wrench observer / MOB 관련
@@ -28,6 +31,11 @@ PARAM_ADD(PARAM_FLOAT, mass, &su_mass)
 PARAM_ADD(PARAM_FLOAT, Jxx,  &Jxx)
 PARAM_ADD(PARAM_FLOAT, Jyy,  &Jyy)
 PARAM_ADD(PARAM_FLOAT, Jzz,  &Jzz)
+
+PARAM_ADD(PARAM_FLOAT, Offset_x,  &Offset_x)
+PARAM_ADD(PARAM_FLOAT, Offset_y,  &Offset_y)
+PARAM_ADD(PARAM_FLOAT, Offset_z,  &Offset_z)
+
 PARAM_GROUP_STOP(su_platform)
 
 // Wrench/MOB 파라미터: 기존 su_wrench 그룹명 유지(로그/툴 호환성)
