@@ -365,8 +365,7 @@ static void stabilizerTask(void* param)
         motorPwm.motors.m1 = motorPwm.motors.m2 = 0; // SEUK 모터 멈췄을때 로그에서도 0 뜨게 하기 위함임
         motorPwm.motors.m3 = motorPwm.motors.m4 = 0; // SEUK
       }
-      suWrenchObserverUpdate(&state, &motorPwm); // SEUK 
-      
+    suWrenchObserverUpdate(&state, &motorPwm, &sensorData.gyro);      
       // Compute compressed log formats
       compressState();
       compressSetpoint();

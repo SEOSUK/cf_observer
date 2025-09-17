@@ -31,6 +31,7 @@
 
 #define __INCLUDED_FROM_PLATFORM_DEFAULTS__
 
+
 #ifdef CONFIG_PLATFORM_CF2
     #include "platform_defaults_cf2.h"
 #endif
@@ -53,10 +54,12 @@
     // m
     #define ARM_LENGTH  0.046f
 #endif
+
 #ifndef CF_MASS
     // kg
     #define CF_MASS     0.027f
 #endif
+
 #ifndef VMOTOR2THRUST0
     #define VMOTOR2THRUST0  0.0f
 #endif
